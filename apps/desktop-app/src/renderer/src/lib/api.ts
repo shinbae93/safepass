@@ -1,6 +1,7 @@
 import type {
-  SetupRequest,
-  UnlockRequest,
+  RegisterRequest,
+  RegisterResponse,
+  LoginRequest,
   TokenResponse,
   SaltResponse,
   VaultResponse,
@@ -43,17 +44,17 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
 }
 
 export const api = {
-  getSalt: (username: string) =>
-    request<SaltResponse>(`/auth/salt?username=${encodeURIComponent(username)}`),
+  getSalt: (userId: string) =>
+    request<SaltResponse>(`/auth/salt?userId=${encodeURIComponent(userId)}`),
 
-  setup: (body: SetupRequest) =>
-    request<TokenResponse>('/auth/setup', {
+  register: (body: RegisterRequest) =>
+    request<RegisterResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(body),
     }),
 
-  unlock: (body: UnlockRequest) =>
-    request<TokenResponse>('/auth/unlock', {
+  login: (body: LoginRequest) =>
+    request<TokenResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(body),
     }),

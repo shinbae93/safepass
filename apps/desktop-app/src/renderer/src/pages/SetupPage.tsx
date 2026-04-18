@@ -30,19 +30,24 @@ export default function SetupPage() {
       const saltB64 = saltToBase64(salt);
       const key = await deriveKey(password, salt);
       const passwordHash = await hashKey(key);
-      const { token } = await api.setup({
+      const { token, userId } = await api.register({
         username: usernameInput.trim(),
         salt: saltB64,
         passwordHash,
       });
-      await window.storeAPI.addUser(usernameInput.trim());
+      await window.storeAPI.addUser({ id: userId, username: usernameInput.trim() });
       cryptoKeyRef.current = key;
       setJwt(token);
       setUsername(usernameInput.trim());
       setInitialized(true);
       navigate('/vault');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Setup failed');
+      const msg = e instanceof Error ? e.message : '';
+      if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network')) {
+        setError('Cannot reach the server. Make sure the API is running.');
+      } else {
+        setError(msg || 'Setup failed');
+      }
     } finally {
       setLoading(false);
     }

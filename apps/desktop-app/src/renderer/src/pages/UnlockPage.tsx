@@ -7,8 +7,8 @@ import { deriveKey, hashKey, base64ToSalt } from '@renderer/lib/crypto';
 export default function UnlockPage() {
   const { cryptoKeyRef, setJwt, setUsername } = useAuth();
   const navigate = useNavigate();
-  const [knownUsers, setKnownUsers] = useState<string[]>([]);
-  const [selectedUser, setSelectedUser] = useState<string>('');
+  const [knownUsers, setKnownUsers] = useState<StoredUser[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [manualUsername, setManualUsername] = useState('');
   const [showManual, setShowManual] = useState(false);
   const [password, setPassword] = useState('');
@@ -18,33 +18,68 @@ export default function UnlockPage() {
   useEffect(() => {
     window.storeAPI.getUsers().then((users) => {
       setKnownUsers(users);
-      if (users.length > 0) setSelectedUser(users[0]);
+      if (users.length > 0) setSelectedUserId(users[0].id);
     });
   }, []);
 
-  const activeUsername = showManual ? manualUsername.trim() : selectedUser;
+  const activeUser = showManual
+    ? null
+    : knownUsers.find((u) => u.id === selectedUserId) ?? null;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!activeUsername) {
+
+    if (!showManual && !activeUser) {
+      setError('Please select a user');
+      return;
+    }
+    if (showManual && !manualUsername.trim()) {
       setError('Please enter a username');
       return;
     }
+
     setLoading(true);
     try {
-      const { salt: saltB64 } = await api.getSalt(activeUsername);
+      let userId: string;
+      let displayUsername: string;
+
+      if (showManual) {
+        // For manual entry we don't have a userId yet — look up salt by username
+        // via a temporary endpoint or reject: here we require the user to be in the list.
+        // If not found, show a helpful error.
+        const found = knownUsers.find(
+          (u) => u.username.toLowerCase() === manualUsername.trim().toLowerCase(),
+        );
+        if (!found) {
+          setError('Account not found on this device. Please register first.');
+          setLoading(false);
+          return;
+        }
+        userId = found.id;
+        displayUsername = found.username;
+      } else {
+        userId = activeUser!.id;
+        displayUsername = activeUser!.username;
+      }
+
+      const { salt: saltB64 } = await api.getSalt(userId);
       const salt = base64ToSalt(saltB64);
       const key = await deriveKey(password, salt);
       const passwordHash = await hashKey(key);
-      const { token } = await api.unlock({ username: activeUsername, passwordHash });
-      await window.storeAPI.addUser(activeUsername);
+      const { token } = await api.login({ userId, passwordHash });
+      await window.storeAPI.addUser({ id: userId, username: displayUsername });
       cryptoKeyRef.current = key;
       setJwt(token);
-      setUsername(activeUsername);
+      setUsername(displayUsername);
       navigate('/vault');
-    } catch {
-      setError('Invalid username or master password');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network')) {
+        setError('Cannot reach the server. Make sure the API is running.');
+      } else {
+        setError('Invalid master password');
+      }
     } finally {
       setLoading(false);
     }
@@ -61,13 +96,13 @@ export default function UnlockPage() {
 
         {!showManual && knownUsers.length > 0 && (
           <select
-            value={selectedUser}
-            onChange={(e) => setSelectedUser(e.target.value)}
+            value={selectedUserId}
+            onChange={(e) => setSelectedUserId(e.target.value)}
             className="w-full rounded-lg bg-gray-800 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {knownUsers.map((u) => (
-              <option key={u} value={u}>
-                {u}
+              <option key={u.id} value={u.id}>
+                {u.username}
               </option>
             ))}
           </select>
@@ -80,7 +115,6 @@ export default function UnlockPage() {
             value={manualUsername}
             onChange={(e) => setManualUsername(e.target.value)}
             className="w-full rounded-lg bg-gray-800 px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
             autoFocus
           />
         )}

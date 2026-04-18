@@ -12,14 +12,19 @@ export interface SaltResponse {
   salt: string;
 }
 
-export interface SetupRequest {
+export interface RegisterRequest {
   username: string;
   salt: string;
   passwordHash: string;
 }
 
-export interface UnlockRequest {
-  username: string;
+export interface RegisterResponse {
+  token: string;
+  userId: string;
+}
+
+export interface LoginRequest {
+  userId: string;
   passwordHash: string;
 }
 
