@@ -9,6 +9,7 @@ export interface VaultEntry {
 }
 
 export interface SaltResponse {
+  userId: string;
   salt: string;
 }
 

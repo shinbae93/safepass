@@ -42,26 +42,18 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      let userId: string;
+      let saltQuery: { userId?: string; username?: string };
       let displayUsername: string;
 
       if (showManual) {
-        const found = knownUsers.find(
-          (u) => u.username.toLowerCase() === manualUsername.trim().toLowerCase(),
-        );
-        if (!found) {
-          setError('Account not found on this device. Please register first.');
-          setLoading(false);
-          return;
-        }
-        userId = found.id;
-        displayUsername = found.username;
+        saltQuery = { username: manualUsername.trim() };
+        displayUsername = manualUsername.trim();
       } else {
-        userId = activeUser!.id;
+        saltQuery = { userId: activeUser!.id };
         displayUsername = activeUser!.username;
       }
 
-      const { salt: saltB64 } = await api.getSalt(userId);
+      const { userId, salt: saltB64 } = await api.getSalt(saltQuery);
       const salt = base64ToSalt(saltB64);
       const key = await deriveKey(password, salt);
       const passwordHash = await hashKey(key);

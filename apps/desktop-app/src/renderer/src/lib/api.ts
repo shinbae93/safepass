@@ -44,8 +44,12 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
 }
 
 export const api = {
-  getSalt: (userId: string) =>
-    request<SaltResponse>(`/auth/salt?userId=${encodeURIComponent(userId)}`),
+  getSalt: (query: { userId?: string; username?: string }) => {
+    const params = new URLSearchParams();
+    if (query.userId) params.set('userId', query.userId);
+    if (query.username) params.set('username', query.username);
+    return request<SaltResponse>(`/auth/salt?${params.toString()}`);
+  },
 
   register: (body: RegisterRequest) =>
     request<RegisterResponse>('/auth/register', {
