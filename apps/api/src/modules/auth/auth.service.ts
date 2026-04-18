@@ -12,10 +12,14 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async getSalt(userId: string): Promise<{ salt: string }> {
-    const user = await this.userRepo.findById(userId);
+  async getSalt(query: { userId?: string; username?: string }): Promise<{ userId: string; salt: string }> {
+    const user = query.userId
+      ? await this.userRepo.findById(query.userId)
+      : query.username
+        ? await this.userRepo.findByUsername(query.username)
+        : null;
     if (!user) throw new UnauthorizedException('Unknown user');
-    return { salt: user.salt };
+    return { userId: user.id, salt: user.salt };
   }
 
   async register(dto: RegisterDto): Promise<{ token: string; userId: string }> {

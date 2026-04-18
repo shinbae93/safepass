@@ -8,8 +8,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get('salt')
-  getSalt(@Query('userId') userId: string) {
-    return this.authService.getSalt(userId);
+  getSalt(@Query('userId') userId?: string, @Query('username') username?: string) {
+    return this.authService.getSalt({ userId, username });
   }
 
   @Post('register')
