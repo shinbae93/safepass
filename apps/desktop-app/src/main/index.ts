@@ -33,6 +33,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  delete process.env['NODE_OPTIONS']
   createWindow()
 
   app.on('activate', () => {
