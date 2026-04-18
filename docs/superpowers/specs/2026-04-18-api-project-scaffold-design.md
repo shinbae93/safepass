@@ -36,13 +36,11 @@ apps/api/
     │   ├── data-source.ts               # Standalone DataSource for TypeORM CLI
     │   ├── database.module.ts           # Exports all repositories via TypeOrmModule
     │   ├── entities/
-    │   │   ├── user.entity.ts           # user table: id, salt, password_hash, timestamps
-    │   │   ├── vault.entity.ts          # vault table: id, user_id (UNIQUE), encrypted_data, iv, updated_at
-    │   │   └── category.entity.ts       # category table: id, user_id, name, icon, sort_order, timestamps
+    │   │   ├── user.entity.ts           # user table: id, username, salt, password_hash, timestamps
+    │   │   └── vault.entity.ts          # vault table: id, user_id, title, value, notes, timestamps
     │   ├── repositories/
     │   │   ├── user.repository.ts       # Extends Repository<UserEntity>
-    │   │   ├── vault.repository.ts      # Extends Repository<VaultEntity>
-    │   │   └── category.repository.ts   # Extends Repository<CategoryEntity>
+    │   │   └── vault.repository.ts      # Extends Repository<VaultEntity>
     │   └── migrations/                  # Empty dir — populated by TypeORM CLI
     │
     └── modules/
@@ -51,16 +49,11 @@ apps/api/
         │   ├── auth.controller.ts       # GET /status, GET /salt, POST /setup, POST /unlock
         │   ├── auth.service.ts          # Stub methods
         │   └── dto/                     # SetupDto, UnlockDto
-        ├── vault/
-        │   ├── vault.module.ts
-        │   ├── vault.controller.ts      # GET /vault, PUT /vault
-        │   ├── vault.service.ts         # Stub methods
-        │   └── dto/                     # SaveVaultDto
-        └── categories/
-            ├── categories.module.ts
-            ├── categories.controller.ts # GET, POST, PATCH /:id, DELETE /:id
-            ├── categories.service.ts    # Stub methods
-            └── dto/                     # CreateCategoryDto, UpdateCategoryDto
+        └── vault/
+            ├── vault.module.ts
+            ├── vault.controller.ts      # GET /vault, POST /vault, PATCH /:id, DELETE /:id
+            ├── vault.service.ts         # Stub methods
+            └── dto/                     # CreateVaultEntryDto, UpdateVaultEntryDto
 ```
 
 ## Entities
@@ -75,17 +68,10 @@ apps/api/
 
 ### VaultEntity (`vault` table)
 - `id`: UUID PK
-- `userId`: UUID FK → user.id, UNIQUE, onDelete CASCADE
-- `encryptedData`: text NOT NULL
-- `iv`: varchar(255) NOT NULL
-- `updatedAt`: timestamptz
-
-### CategoryEntity (`category` table)
-- `id`: UUID PK
 - `userId`: UUID FK → user.id, onDelete CASCADE
-- `name`: varchar(100) NOT NULL
-- `icon`: varchar(50) NULLABLE
-- `sortOrder`: int DEFAULT 0
+- `title`: text NOT NULL — encrypted client-side
+- `value`: text NOT NULL — encrypted client-side (the secret)
+- `notes`: text NULLABLE — encrypted client-side
 - `createdAt`: timestamptz
 - `updatedAt`: timestamptz
 
