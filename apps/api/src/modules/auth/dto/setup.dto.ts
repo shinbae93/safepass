@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class SetupDto {
   @IsString()
@@ -11,5 +11,6 @@ export class SetupDto {
 
   @IsString()
   @IsNotEmpty()
+  @MinLength(1)
   passwordHash: string;
 }
