@@ -95,7 +95,7 @@ apps/
       pages/       # setup, unlock, vault
       components/  # UI components + shadcn/ui primitives in components/ui/
       types/       # TypeScript interfaces
-  server/          # NestJS backend
+  api/             # NestJS backend
     src/
       auth/        # Setup, unlock, JWT guard
       vault/       # GET/PUT encrypted blob
@@ -135,8 +135,8 @@ Defined in `.env` at project root (git-ignored):
 
 | Variable     | Used By      | Default                    |
 |--------------|--------------|----------------------------|
-| DB_PASSWORD  | db, server   | safepass_dev               |
-| JWT_SECRET   | server       | dev_jwt_secret_change_me   |
+| DB_PASSWORD  | db, api      | safepass_dev               |
+| JWT_SECRET   | api          | dev_jwt_secret_change_me   |
 | VITE_API_URL | client       | http://localhost:3000      |
 
 ## Security Invariants
