@@ -78,7 +78,11 @@ describe('AuthService', () => {
   describe('unlock', () => {
     it('returns a token on correct passwordHash', async () => {
       const hash = Buffer.from('abc').toString('base64');
-      mockUserRepo.findByUsername.mockResolvedValue({ id: 'uuid-1', username: 'alice', passwordHash: hash });
+      mockUserRepo.findByUsername.mockResolvedValue({
+        id: 'uuid-1',
+        username: 'alice',
+        passwordHash: hash,
+      });
       mockJwtService.sign.mockReturnValue('jwt-token');
       const result = await service.unlock({ username: 'alice', passwordHash: hash });
       expect(result).toEqual({ token: 'jwt-token' });
@@ -97,9 +101,12 @@ describe('AuthService', () => {
         username: 'alice',
         passwordHash: Buffer.from('correct').toString('base64'),
       });
-      await expect(service.unlock({ username: 'alice', passwordHash: Buffer.from('wrong').toString('base64') })).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(
+        service.unlock({
+          username: 'alice',
+          passwordHash: Buffer.from('wrong').toString('base64'),
+        }),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 });
