@@ -12,11 +12,11 @@ export class AuthService {
     throw new Error('Not implemented');
   }
 
-  setup(dto: SetupDto): { token: string } {
+  setup(_dto: SetupDto): { token: string } {
     throw new Error('Not implemented');
   }
 
-  unlock(dto: UnlockDto): { token: string } {
+  unlock(_dto: UnlockDto): { token: string } {
     throw new Error('Not implemented');
   }
 }

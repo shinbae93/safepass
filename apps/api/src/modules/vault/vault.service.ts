@@ -4,19 +4,19 @@ import { UpdateVaultEntryDto } from './dto/update-vault-entry.dto';
 
 @Injectable()
 export class VaultService {
-  findAll(userId: string) {
+  findAll(_userId: string) {
     throw new Error('Not implemented');
   }
 
-  create(userId: string, dto: CreateVaultEntryDto) {
+  create(_userId: string, _dto: CreateVaultEntryDto) {
     throw new Error('Not implemented');
   }
 
-  update(userId: string, id: string, dto: UpdateVaultEntryDto) {
+  update(_userId: string, _id: string, _dto: UpdateVaultEntryDto) {
     throw new Error('Not implemented');
   }
 
-  remove(userId: string, id: string) {
+  remove(_userId: string, _id: string) {
     throw new Error('Not implemented');
   }
 }
