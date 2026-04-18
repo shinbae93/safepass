@@ -8,10 +8,6 @@ export interface VaultEntry {
   updatedAt: string;
 }
 
-export interface AuthStatus {
-  initialized: boolean;
-}
-
 export interface SaltResponse {
   salt: string;
 }

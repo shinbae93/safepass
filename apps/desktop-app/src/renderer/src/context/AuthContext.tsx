@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
-import { api } from '@renderer/lib/api';
 
 interface AuthContextValue {
   initialized: boolean;
@@ -23,19 +22,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const cryptoKeyRef = useRef<CryptoKey | null>(null);
 
   useEffect(() => {
-    const controller = new AbortController();
-    api
-      .getStatus()
-      .then(({ initialized }) => {
-        if (!controller.signal.aborted) {
-          setInitialized(initialized);
-          setStatusLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setStatusLoading(false);
-      });
-    return () => controller.abort();
+    window.storeAPI.getUsers().then((users) => {
+      setInitialized(users.length > 0);
+      setStatusLoading(false);
+    });
   }, []);
 
   function lock() {

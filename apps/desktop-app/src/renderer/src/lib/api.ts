@@ -2,7 +2,6 @@ import type {
   SetupRequest,
   UnlockRequest,
   TokenResponse,
-  AuthStatus,
   SaltResponse,
   VaultResponse,
   VaultUpdateRequest,
@@ -19,13 +18,20 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${BASE_URL}/api${path}`, {
-    ...options,
-    headers,
-  });
+  const method = options.method ?? 'GET';
+  console.debug(`[api] ${method} ${BASE_URL}/api${path}`);
+
+  let response: Response;
+  try {
+    response = await fetch(`${BASE_URL}/api${path}`, { ...options, headers });
+  } catch (err) {
+    console.error(`[api] ${method} ${path} — network error:`, err);
+    throw err;
+  }
 
   if (!response.ok) {
     const error = await response.text();
+    console.error(`[api] ${method} ${path} — ${response.status}:`, error);
     throw new Error(error || `HTTP ${response.status}`);
   }
 
@@ -37,8 +43,6 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
 }
 
 export const api = {
-  getStatus: () => request<AuthStatus>('/auth/status'),
-
   getSalt: (username: string) =>
     request<SaltResponse>(`/auth/salt?username=${encodeURIComponent(username)}`),
 
