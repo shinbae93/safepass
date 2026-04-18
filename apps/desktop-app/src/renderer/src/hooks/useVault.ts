@@ -27,7 +27,9 @@ export function useVault() {
 
   const saveEntries = useCallback(
     async (next: VaultEntry[]) => {
-      if (!jwt || !cryptoKeyRef.current) return
+      if (!jwt || !cryptoKeyRef.current) {
+        throw new Error('Not authenticated — vault save aborted')
+      }
       const { encryptedData, iv } = await encrypt(
         cryptoKeyRef.current,
         JSON.stringify(next)

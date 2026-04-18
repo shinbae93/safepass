@@ -18,7 +18,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const cryptoKeyRef = useRef<CryptoKey | null>(null)
 
   useEffect(() => {
-    api.getStatus().then(({ initialized }) => setInitialized(initialized))
+    const controller = new AbortController()
+    api.getStatus()
+      .then(({ initialized }) => {
+        if (!controller.signal.aborted) setInitialized(initialized)
+      })
+      .catch(() => {})
+    return () => controller.abort()
   }, [])
 
   function lock() {
