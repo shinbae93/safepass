@@ -53,13 +53,11 @@ pnpm migration:revert          # Revert last migration
 
 ## Architecture
 
-### Encryption model (critical to understand)
+### Data model (vault)
 
-The vault is stored as a **single encrypted blob** — not individual entries. This prevents the server from knowing entry count, which entry changed, or any metadata. Every save generates a fresh IV and re-encrypts the entire vault.
+The vault uses a **hybrid model**: the server stores individual rows per entry (`title`, `value`, `notes`). The server knows entry count but not the semantic meaning of values. Full zero-knowledge encryption is not implemented — `value` is stored as plaintext on the server.
 
-Key derivation flow: `master password → PBKDF2(password, salt, 600k) → CryptoKey`. The CryptoKey is held in a React ref (not state) and never persisted. The server only receives `SHA-256(exportedKey)` for verification.
-
-Core crypto module: `apps/client/src/lib/crypto.ts`
+Each vault operation hits a dedicated endpoint. All endpoints require a valid JWT; `userId` is extracted from the token via `JwtAuthGuard` and `JwtStrategy` (passport-jwt).
 
 ### Documentation structure
 
@@ -116,7 +114,7 @@ TypeORM auto-converts camelCase properties to snake_case columns.
 Base URL: `http://localhost:3000/api`
 
 - Auth endpoints (public): `GET /auth/status`, `GET /auth/salt`, `POST /auth/setup`, `POST /auth/unlock`
-- Vault endpoints (JWT required): `GET /vault`, `PUT /vault`
+- Vault endpoints (JWT required): `GET /vault`, `GET /vault/:id`, `POST /vault`, `PATCH /vault/:id`, `DELETE /vault/:id`
 - Category endpoints (JWT required): `GET /categories`, `POST /categories`, `PATCH /categories/:id`, `DELETE /categories/:id`
 
 ### Frontend routing
