@@ -1,15 +1,16 @@
 import { useEffect } from 'react'
-import { MemoryRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { MemoryRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@renderer/context/AuthContext'
 import SetupPage from '@renderer/pages/SetupPage'
 import UnlockPage from '@renderer/pages/UnlockPage'
 import VaultPage from '@renderer/pages/VaultPage'
 
 function AppRoutes() {
-  const { initialized, jwt } = useAuth()
+  const { initialized, statusLoading, jwt } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
+    if (statusLoading) return
     if (!initialized) {
       navigate('/setup')
     } else if (!jwt) {
@@ -17,21 +18,22 @@ function AppRoutes() {
     } else {
       navigate('/vault')
     }
-  }, [initialized, jwt, navigate])
+  }, [initialized, statusLoading, jwt, navigate])
+
+  if (statusLoading) return null
 
   return (
     <Routes>
       <Route path="/setup" element={<SetupPage />} />
       <Route path="/unlock" element={<UnlockPage />} />
       <Route path="/vault" element={<VaultPage />} />
-      <Route path="*" element={<Navigate to="/unlock" replace />} />
     </Routes>
   )
 }
 
 export default function App() {
   return (
-    <MemoryRouter initialEntries={['/unlock']}>
+    <MemoryRouter initialEntries={['/']}>
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>

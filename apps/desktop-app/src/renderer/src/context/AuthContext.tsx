@@ -3,6 +3,7 @@ import { api } from '@renderer/lib/api'
 
 interface AuthContextValue {
   initialized: boolean
+  statusLoading: boolean
   jwt: string | null
   cryptoKeyRef: React.MutableRefObject<CryptoKey | null>
   setJwt: (token: string | null) => void
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [initialized, setInitialized] = useState(false)
+  const [statusLoading, setStatusLoading] = useState(true)
   const [jwt, setJwt] = useState<string | null>(null)
   const cryptoKeyRef = useRef<CryptoKey | null>(null)
 
@@ -21,9 +23,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const controller = new AbortController()
     api.getStatus()
       .then(({ initialized }) => {
-        if (!controller.signal.aborted) setInitialized(initialized)
+        if (!controller.signal.aborted) {
+          setInitialized(initialized)
+          setStatusLoading(false)
+        }
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!controller.signal.aborted) setStatusLoading(false)
+      })
     return () => controller.abort()
   }, [])
 
@@ -34,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ initialized, jwt, cryptoKeyRef, setJwt, setInitialized, lock }}
+      value={{ initialized, statusLoading, jwt, cryptoKeyRef, setJwt, setInitialized, lock }}
     >
       {children}
     </AuthContext.Provider>
