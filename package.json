@@ -9,6 +9,9 @@
     "format": "pnpm -r format",
     "test": "pnpm -r test"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["electron", "esbuild"]
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.58.2",
     "@typescript-eslint/parser": "^8.58.2",
