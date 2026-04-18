@@ -102,6 +102,12 @@ importers:
 
   apps/desktop-app:
     dependencies:
+      '@electron-toolkit/preload':
+        specifier: ^3.0.2
+        version: 3.0.2(electron@33.4.11)
+      '@electron-toolkit/utils':
+        specifier: ^4.0.0
+        version: 4.0.0(electron@33.4.11)
       electron:
         specifier: ^33.0.0
         version: 33.4.11
@@ -270,10 +276,20 @@ packages:
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
 
+  '@electron-toolkit/preload@3.0.2':
+    resolution: {integrity: sha512-TWWPToXd8qPRfSXwzf5KVhpXMfONaUuRAZJHsKthKgZR/+LqX1dZVSSClQ8OTAEduvLGdecljCsoT2jSshfoUg==}
+    peerDependencies:
+      electron: '>=13.0.0'
+
   '@electron-toolkit/tsconfig@1.0.1':
     resolution: {integrity: sha512-M0Mol3odspvtCuheyujLNAW7bXq7KFNYVMRtpjFa4ZfES4MuklXBC7Nli/omvc+PRKlrklgAGx3l4VakjNo8jg==}
     peerDependencies:
       '@types/node': '*'
+
+  '@electron-toolkit/utils@4.0.0':
+    resolution: {integrity: sha512-qXSntwEzluSzKl4z5yFNBknmPGjPa3zFhE4mp9+h0cgokY5ornAeP+CJQDBhKsL1S58aOQfcwkD3NwLZCl+64g==}
+    peerDependencies:
+      electron: '>=13.0.0'
 
   '@electron/get@2.0.3':
     resolution: {integrity: sha512-Qkzpg2s9GnVV2I2BjRksUi43U5e6+zaQMcjoJy0C+C5oxaKl+fmckGDQFtRpZpZV0NQekuZZ+tGz7EA9TVnQtQ==}
@@ -1847,6 +1863,7 @@ packages:
 
   glob@10.4.5:
     resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   glob@10.5.0:
@@ -3400,9 +3417,17 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
+  '@electron-toolkit/preload@3.0.2(electron@33.4.11)':
+    dependencies:
+      electron: 33.4.11
+
   '@electron-toolkit/tsconfig@1.0.1(@types/node@20.19.39)':
     dependencies:
       '@types/node': 20.19.39
+
+  '@electron-toolkit/utils@4.0.0(electron@33.4.11)':
+    dependencies:
+      electron: 33.4.11
 
   '@electron/get@2.0.3':
     dependencies:

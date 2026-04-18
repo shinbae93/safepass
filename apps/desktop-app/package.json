@@ -11,6 +11,8 @@
     "format": "prettier --write \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
+    "@electron-toolkit/preload": "^3.0.2",
+    "@electron-toolkit/utils": "^4.0.0",
     "electron": "^33.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
