@@ -12,11 +12,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async getStatus(): Promise<{ initialized: boolean }> {
-    const count = await this.userRepo.countAll();
-    return { initialized: count > 0 };
-  }
-
   async getSalt(username: string): Promise<{ salt: string }> {
     const user = await this.userRepo.findByUsername(username);
     if (!user) throw new UnauthorizedException('Unknown username');

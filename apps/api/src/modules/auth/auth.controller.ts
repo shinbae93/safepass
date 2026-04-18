@@ -7,11 +7,6 @@ import { UnlockDto } from './dto/unlock.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get('status')
-  getStatus() {
-    return this.authService.getStatus();
-  }
-
   @Get('salt')
   getSalt(@Query('username') username: string) {
     return this.authService.getSalt(username);
