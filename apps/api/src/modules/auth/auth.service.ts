@@ -22,6 +22,11 @@ export class AuthService {
     return { userId: user.id, salt: user.salt };
   }
 
+  async checkUsername(username: string): Promise<{ exists: boolean }> {
+    const exists = await this.userRepo.existsByUsername(username);
+    return { exists };
+  }
+
   async register(dto: RegisterDto): Promise<{ token: string; userId: string }> {
     const exists = await this.userRepo.existsByUsername(dto.username);
     if (exists) throw new ConflictException('Username already taken');

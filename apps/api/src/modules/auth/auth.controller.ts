@@ -12,6 +12,11 @@ export class AuthController {
     return this.authService.getSalt({ userId, username });
   }
 
+  @Get('check-username')
+  checkUsername(@Query('username') username: string) {
+    return this.authService.checkUsername(username);
+  }
+
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
