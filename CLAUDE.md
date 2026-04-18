@@ -10,7 +10,7 @@ Single-user app: no registration flow. First launch sets a master password; subs
 
 ## Tech Stack
 
-- **Monorepo**: Nx workspace
+- **Monorepo**: pnpm workspaces
 - **Frontend**: React 18 + Vite + TypeScript + Tailwind CSS + shadcn/ui (Radix)
 - **Backend**: NestJS + TypeScript
 - **Database**: PostgreSQL 16 via TypeORM (`synchronize: true` in dev)
@@ -31,18 +31,24 @@ docker compose exec db psql -U safepass -d safepass  # Access DB directly
 ### Local dev (faster iteration)
 ```bash
 docker compose up db           # Start only PostgreSQL
-npx nx serve server            # Terminal 1: NestJS on :3000
-npx nx serve client            # Terminal 2: Vite on :5173
+pnpm dev:api                   # Terminal 1: NestJS on :3000
 ```
 
-### Nx commands
+### pnpm commands (run from repo root)
 ```bash
-npx nx serve <project>         # Dev server (client or server)
-npx nx build <project>         # Production build
-npx nx run-many -t build       # Build all projects
-npx nx run-many -t lint        # Lint all projects
-npx nx run-many -t test        # Test all projects
-npx nx affected -t build       # Build only affected projects
+pnpm install                   # Install all dependencies
+pnpm dev:api                   # Start API dev server
+pnpm build:api                 # Production build of API
+pnpm lint                      # Lint all packages
+pnpm format                    # Format all packages
+pnpm test                      # Test all packages
+```
+
+### Per-app commands (run from apps/api)
+```bash
+pnpm migration:generate        # Generate migration from entity diff
+pnpm migration:run             # Apply pending migrations
+pnpm migration:revert          # Revert last migration
 ```
 
 ## Architecture
@@ -89,7 +95,7 @@ apps/
       pages/       # setup, unlock, vault
       components/  # UI components + shadcn/ui primitives in components/ui/
       types/       # TypeScript interfaces
-  server/          # NestJS backend
+  api/             # NestJS backend
     src/
       auth/        # Setup, unlock, JWT guard
       vault/       # GET/PUT encrypted blob
@@ -129,8 +135,8 @@ Defined in `.env` at project root (git-ignored):
 
 | Variable     | Used By      | Default                    |
 |--------------|--------------|----------------------------|
-| DB_PASSWORD  | db, server   | safepass_dev               |
-| JWT_SECRET   | server       | dev_jwt_secret_change_me   |
+| DB_PASSWORD  | db, api      | safepass_dev               |
+| JWT_SECRET   | api          | dev_jwt_secret_change_me   |
 | VITE_API_URL | client       | http://localhost:3000      |
 
 ## Security Invariants
