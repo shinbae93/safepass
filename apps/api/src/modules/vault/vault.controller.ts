@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { VaultService } from './vault.service';
 import { CreateVaultEntryDto } from './dto/create-vault-entry.dto';
 import { UpdateVaultEntryDto } from './dto/update-vault-entry.dto';

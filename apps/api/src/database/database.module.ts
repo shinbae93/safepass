@@ -12,8 +12,7 @@ import { VaultRepository } from './repositories/vault.repository';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) =>
-        config.get<DataSourceOptions>('database'),
+      useFactory: (config: ConfigService) => config.get<DataSourceOptions>('database'),
     }),
     TypeOrmModule.forFeature([UserEntity, VaultEntity]),
   ],
