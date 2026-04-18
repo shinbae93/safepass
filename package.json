@@ -4,10 +4,15 @@
   "private": true,
   "scripts": {
     "dev:api": "pnpm --filter @safepass/api start:dev",
+    "dev:desktop": "pnpm --filter @safepass/desktop-app dev",
     "build:api": "pnpm --filter @safepass/api build",
+    "build:desktop": "pnpm --filter @safepass/desktop-app build",
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
     "test": "pnpm -r test"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["electron", "esbuild"]
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.58.2",
