@@ -30,7 +30,11 @@ export default function SetupPage() {
       const saltB64 = saltToBase64(salt);
       const key = await deriveKey(password, salt);
       const passwordHash = await hashKey(key);
-      const { token } = await api.setup({ username: usernameInput.trim(), salt: saltB64, passwordHash });
+      const { token } = await api.setup({
+        username: usernameInput.trim(),
+        salt: saltB64,
+        passwordHash,
+      });
       await window.storeAPI.addUser(usernameInput.trim());
       cryptoKeyRef.current = key;
       setJwt(token);
