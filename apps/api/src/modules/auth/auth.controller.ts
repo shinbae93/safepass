@@ -1,29 +1,29 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SetupDto } from './dto/setup.dto';
-import { UnlockDto } from './dto/unlock.dto';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get('status')
-  getStatus() {
-    return this.authService.getStatus();
-  }
-
   @Get('salt')
-  getSalt() {
-    return this.authService.getSalt();
+  getSalt(@Query('userId') userId?: string, @Query('username') username?: string) {
+    return this.authService.getSalt({ userId, username });
   }
 
-  @Post('setup')
-  setup(@Body() dto: SetupDto) {
-    return this.authService.setup(dto);
+  @Get('check-username')
+  checkUsername(@Query('username') username: string) {
+    return this.authService.checkUsername(username);
   }
 
-  @Post('unlock')
-  unlock(@Body() dto: UnlockDto) {
-    return this.authService.unlock(dto);
+  @Post('register')
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
+
+  @Post('login')
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
   }
 }

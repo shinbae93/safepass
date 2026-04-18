@@ -8,26 +8,28 @@ export interface VaultEntry {
   updatedAt: string;
 }
 
-export interface AuthStatus {
-  initialized: boolean;
-}
-
 export interface SaltResponse {
+  userId: string;
   salt: string;
 }
 
-export interface SetupRequest {
+export interface RegisterRequest {
+  username: string;
   salt: string;
   passwordHash: string;
-  encryptedData: string;
-  iv: string;
 }
 
-export interface UnlockRequest {
+export interface RegisterResponse {
+  token: string;
+  userId: string;
+}
+
+export interface LoginRequest {
+  userId: string;
   passwordHash: string;
 }
 
-export interface UnlockResponse {
+export interface TokenResponse {
   token: string;
 }
 

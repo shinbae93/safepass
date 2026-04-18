@@ -1,31 +1,26 @@
 import { useEffect } from 'react';
 import { MemoryRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@renderer/context/AuthContext';
-import SetupPage from '@renderer/pages/SetupPage';
-import UnlockPage from '@renderer/pages/UnlockPage';
+import LoginPage from '@renderer/pages/LoginPage';
+import RegisterPage from '@renderer/pages/RegisterPage';
 import VaultPage from '@renderer/pages/VaultPage';
 
 function AppRoutes() {
-  const { initialized, statusLoading, jwt } = useAuth();
+  const { jwt } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (statusLoading) return;
-    if (!initialized) {
-      navigate('/setup');
-    } else if (!jwt) {
-      navigate('/unlock');
+    if (!jwt) {
+      navigate('/login');
     } else {
       navigate('/vault');
     }
-  }, [initialized, statusLoading, jwt, navigate]);
-
-  if (statusLoading) return null;
+  }, [jwt, navigate]);
 
   return (
     <Routes>
-      <Route path="/setup" element={<SetupPage />} />
-      <Route path="/unlock" element={<UnlockPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route path="/vault" element={<VaultPage />} />
     </Routes>
   );
@@ -33,7 +28,7 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <MemoryRouter initialEntries={['/']}>
+    <MemoryRouter initialEntries={['/login']}>
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>
