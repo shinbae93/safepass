@@ -12,7 +12,10 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async getSalt(query: { userId?: string; username?: string }): Promise<{ userId: string; salt: string }> {
+  async getSalt(query: {
+    userId?: string;
+    username?: string;
+  }): Promise<{ userId: string; salt: string }> {
     const user = query.userId
       ? await this.userRepo.findById(query.userId)
       : query.username

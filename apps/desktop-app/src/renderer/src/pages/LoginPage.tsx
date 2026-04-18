@@ -23,9 +23,7 @@ export default function LoginPage() {
     });
   }, []);
 
-  const activeUser = showManual
-    ? null
-    : knownUsers.find((u) => u.id === selectedUserId) ?? null;
+  const activeUser = showManual ? null : (knownUsers.find((u) => u.id === selectedUserId) ?? null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();

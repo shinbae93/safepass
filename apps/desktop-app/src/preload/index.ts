@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 });
 
 contextBridge.exposeInMainWorld('storeAPI', {
-  getUsers: (): Promise<{ id: string; username: string }[]> => ipcRenderer.invoke('store:get-users'),
-  addUser: (user: { id: string; username: string }): Promise<void> => ipcRenderer.invoke('store:add-user', user),
+  getUsers: (): Promise<{ id: string; username: string }[]> =>
+    ipcRenderer.invoke('store:get-users'),
+  addUser: (user: { id: string; username: string }): Promise<void> =>
+    ipcRenderer.invoke('store:add-user', user),
 });
