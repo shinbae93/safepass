@@ -19,7 +19,7 @@ export interface SaltResponse {
 export interface SetupRequest {
   salt: string
   passwordHash: string
-  encryptedVault: string
+  encryptedData: string
   iv: string
 }
 
