@@ -1,6 +1,15 @@
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { join } from 'path';
 import { is } from '@electron-toolkit/utils';
+import Store from 'electron-store';
+
+interface StoreSchema {
+  users: string[];
+}
+
+const store = new Store<StoreSchema>({
+  defaults: { users: [] },
+});
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -31,6 +40,17 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
 }
+
+ipcMain.handle('store:get-users', () => {
+  return store.get('users');
+});
+
+ipcMain.handle('store:add-user', (_event, username: string) => {
+  const users = store.get('users');
+  if (!users.includes(username)) {
+    store.set('users', [...users, username]);
+  }
+});
 
 app.whenReady().then(() => {
   delete process.env['NODE_OPTIONS'];
