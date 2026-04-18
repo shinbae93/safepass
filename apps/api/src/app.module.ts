@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import { DatabaseModule } from './database/database.module';
-import { HealthController } from './health.controller';
+import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { VaultModule } from './modules/vault/vault.module';
 
@@ -14,9 +14,9 @@ import { VaultModule } from './modules/vault/vault.module';
       load: [appConfig, databaseConfig],
     }),
     DatabaseModule,
+    HealthModule,
     AuthModule,
     VaultModule,
   ],
-  controllers: [HealthController],
 })
 export class AppModule {}
