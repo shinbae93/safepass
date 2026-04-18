@@ -1,30 +1,54 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { VaultService } from './vault.service';
 import { CreateVaultEntryDto } from './dto/create-vault-entry.dto';
 import { UpdateVaultEntryDto } from './dto/update-vault-entry.dto';
 
 @Controller('vault')
+@UseGuards(JwtAuthGuard)
 export class VaultController {
   constructor(private readonly vaultService: VaultService) {}
 
   @Get()
-  findAll() {
-    // userId will come from JWT guard once auth is implemented
-    return this.vaultService.findAll('placeholder-user-id');
+  findAll(@CurrentUser() user: { userId: string }) {
+    return this.vaultService.findAll(user.userId);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string, @CurrentUser() user: { userId: string }) {
+    return this.vaultService.findOne(id, user.userId);
   }
 
   @Post()
-  create(@Body() dto: CreateVaultEntryDto) {
-    return this.vaultService.create('placeholder-user-id', dto);
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() dto: CreateVaultEntryDto, @CurrentUser() user: { userId: string }) {
+    return this.vaultService.create(user.userId, dto);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateVaultEntryDto) {
-    return this.vaultService.update('placeholder-user-id', id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateVaultEntryDto,
+    @CurrentUser() user: { userId: string },
+  ) {
+    return this.vaultService.update(id, user.userId, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.vaultService.remove('placeholder-user-id', id);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id') id: string, @CurrentUser() user: { userId: string }) {
+    return this.vaultService.remove(id, user.userId);
   }
 }

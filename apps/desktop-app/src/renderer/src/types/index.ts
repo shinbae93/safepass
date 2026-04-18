@@ -3,7 +3,6 @@ export interface VaultEntry {
   title: string;
   value: string;
   notes: string | null;
-  categoryId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,12 +32,14 @@ export interface TokenResponse {
   token: string;
 }
 
-export interface VaultResponse {
-  encryptedData: string;
-  iv: string;
+export interface CreateVaultEntryRequest {
+  title: string;
+  value: string;
+  notes?: string;
 }
 
-export interface VaultUpdateRequest {
-  encryptedData: string;
-  iv: string;
+export interface UpdateVaultEntryRequest {
+  title?: string;
+  value?: string;
+  notes?: string | null;
 }

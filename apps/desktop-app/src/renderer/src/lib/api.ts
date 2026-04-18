@@ -4,8 +4,9 @@ import type {
   LoginRequest,
   TokenResponse,
   SaltResponse,
-  VaultResponse,
-  VaultUpdateRequest,
+  VaultEntry,
+  CreateVaultEntryRequest,
+  UpdateVaultEntryRequest,
 } from '@renderer/types';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
@@ -63,8 +64,18 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
-  getVault: (token: string) => request<VaultResponse>('/vault', {}, token),
+  getVaultEntries: (token: string) =>
+    request<VaultEntry[]>('/vault', {}, token),
 
-  putVault: (body: VaultUpdateRequest, token: string) =>
-    request<void>('/vault', { method: 'PUT', body: JSON.stringify(body) }, token),
+  getVaultEntry: (id: string, token: string) =>
+    request<VaultEntry>(`/vault/${id}`, {}, token),
+
+  createVaultEntry: (body: CreateVaultEntryRequest, token: string) =>
+    request<VaultEntry>('/vault', { method: 'POST', body: JSON.stringify(body) }, token),
+
+  updateVaultEntry: (id: string, body: UpdateVaultEntryRequest, token: string) =>
+    request<VaultEntry>(`/vault/${id}`, { method: 'PATCH', body: JSON.stringify(body) }, token),
+
+  deleteVaultEntry: (id: string, token: string) =>
+    request<void>(`/vault/${id}`, { method: 'DELETE' }, token),
 };
