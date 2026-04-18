@@ -8,7 +8,7 @@ export class AuthService {
     throw new Error('Not implemented');
   }
 
-  getSalt(): { salt: string } {
+  getSalt(_username: string): { salt: string } {
     throw new Error('Not implemented');
   }
 
