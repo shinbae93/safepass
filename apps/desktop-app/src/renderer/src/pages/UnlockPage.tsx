@@ -1,33 +1,33 @@
-import { useState, FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@renderer/context/AuthContext'
-import { api } from '@renderer/lib/api'
-import { deriveKey, hashKey, base64ToSalt } from '@renderer/lib/crypto'
+import { useState, FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@renderer/context/AuthContext';
+import { api } from '@renderer/lib/api';
+import { deriveKey, hashKey, base64ToSalt } from '@renderer/lib/crypto';
 
 export default function UnlockPage() {
-  const { cryptoKeyRef, setJwt } = useAuth()
-  const navigate = useNavigate()
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { cryptoKeyRef, setJwt } = useAuth();
+  const navigate = useNavigate();
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
     try {
-      const { salt: saltB64 } = await api.getSalt()
-      const salt = base64ToSalt(saltB64)
-      const key = await deriveKey(password, salt)
-      const passwordHash = await hashKey(key)
-      const { token } = await api.unlock({ passwordHash })
-      cryptoKeyRef.current = key
-      setJwt(token)
-      navigate('/vault')
-    } catch (e) {
-      setError('Invalid master password')
+      const { salt: saltB64 } = await api.getSalt();
+      const salt = base64ToSalt(saltB64);
+      const key = await deriveKey(password, salt);
+      const passwordHash = await hashKey(key);
+      const { token } = await api.unlock({ passwordHash });
+      cryptoKeyRef.current = key;
+      setJwt(token);
+      navigate('/vault');
+    } catch {
+      setError('Invalid master password');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -57,5 +57,5 @@ export default function UnlockPage() {
         </button>
       </form>
     </div>
-  )
+  );
 }

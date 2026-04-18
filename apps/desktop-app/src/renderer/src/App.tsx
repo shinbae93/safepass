@@ -1,26 +1,26 @@
-import { useEffect } from 'react'
-import { MemoryRouter, Routes, Route, useNavigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from '@renderer/context/AuthContext'
-import SetupPage from '@renderer/pages/SetupPage'
-import UnlockPage from '@renderer/pages/UnlockPage'
-import VaultPage from '@renderer/pages/VaultPage'
+import { useEffect } from 'react';
+import { MemoryRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from '@renderer/context/AuthContext';
+import SetupPage from '@renderer/pages/SetupPage';
+import UnlockPage from '@renderer/pages/UnlockPage';
+import VaultPage from '@renderer/pages/VaultPage';
 
 function AppRoutes() {
-  const { initialized, statusLoading, jwt } = useAuth()
-  const navigate = useNavigate()
+  const { initialized, statusLoading, jwt } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (statusLoading) return
+    if (statusLoading) return;
     if (!initialized) {
-      navigate('/setup')
+      navigate('/setup');
     } else if (!jwt) {
-      navigate('/unlock')
+      navigate('/unlock');
     } else {
-      navigate('/vault')
+      navigate('/vault');
     }
-  }, [initialized, statusLoading, jwt, navigate])
+  }, [initialized, statusLoading, jwt, navigate]);
 
-  if (statusLoading) return null
+  if (statusLoading) return null;
 
   return (
     <Routes>
@@ -28,7 +28,7 @@ function AppRoutes() {
       <Route path="/unlock" element={<UnlockPage />} />
       <Route path="/vault" element={<VaultPage />} />
     </Routes>
-  )
+  );
 }
 
 export default function App() {
@@ -38,5 +38,5 @@ export default function App() {
         <AppRoutes />
       </AuthProvider>
     </MemoryRouter>
-  )
+  );
 }

@@ -1,33 +1,33 @@
-import { useEffect, useState } from 'react'
-import { useAuth } from '@renderer/context/AuthContext'
-import { useVault } from '@renderer/hooks/useVault'
-import type { VaultEntry } from '@renderer/types'
+import { useEffect, useState } from 'react';
+import { useAuth } from '@renderer/context/AuthContext';
+import { useVault } from '@renderer/hooks/useVault';
+import type { VaultEntry } from '@renderer/types';
 
 export default function VaultPage() {
-  const { lock } = useAuth()
-  const { entries, loading, error, loadVault, addEntry, deleteEntry } = useVault()
-  const [showAdd, setShowAdd] = useState(false)
-  const [title, setTitle] = useState('')
-  const [value, setValue] = useState('')
-  const [notes, setNotes] = useState('')
+  const { lock } = useAuth();
+  const { entries, loading, error, loadVault, addEntry, deleteEntry } = useVault();
+  const [showAdd, setShowAdd] = useState(false);
+  const [title, setTitle] = useState('');
+  const [value, setValue] = useState('');
+  const [notes, setNotes] = useState('');
 
   useEffect(() => {
-    loadVault()
-  }, [loadVault])
+    loadVault();
+  }, [loadVault]);
 
-  const [mutationError, setMutationError] = useState<string | null>(null)
+  const [mutationError, setMutationError] = useState<string | null>(null);
 
   async function handleAdd() {
-    if (!title || !value) return
-    setMutationError(null)
+    if (!title || !value) return;
+    setMutationError(null);
     try {
-      await addEntry({ title, value, notes: notes || null, categoryId: null })
-      setTitle('')
-      setValue('')
-      setNotes('')
-      setShowAdd(false)
+      await addEntry({ title, value, notes: notes || null, categoryId: null });
+      setTitle('');
+      setValue('');
+      setNotes('');
+      setShowAdd(false);
     } catch (e) {
-      setMutationError(e instanceof Error ? e.message : 'Failed to save entry')
+      setMutationError(e instanceof Error ? e.message : 'Failed to save entry');
     }
   }
 
@@ -102,7 +102,11 @@ export default function VaultPage() {
                 {entry.notes && <p className="text-sm text-gray-400">{entry.notes}</p>}
               </div>
               <button
-                onClick={() => deleteEntry(entry.id).catch((e) => setMutationError(e instanceof Error ? e.message : 'Failed to delete entry'))}
+                onClick={() =>
+                  deleteEntry(entry.id).catch((e) =>
+                    setMutationError(e instanceof Error ? e.message : 'Failed to delete entry'),
+                  )
+                }
                 className="text-sm text-red-400 hover:text-red-300"
               >
                 Delete
@@ -112,5 +116,5 @@ export default function VaultPage() {
         </ul>
       </main>
     </div>
-  )
+  );
 }

@@ -1,44 +1,44 @@
-import { useState, FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@renderer/context/AuthContext'
-import { api } from '@renderer/lib/api'
-import { deriveKey, hashKey, encrypt, generateSalt, saltToBase64 } from '@renderer/lib/crypto'
+import { useState, FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@renderer/context/AuthContext';
+import { api } from '@renderer/lib/api';
+import { deriveKey, hashKey, encrypt, generateSalt, saltToBase64 } from '@renderer/lib/crypto';
 
 export default function SetupPage() {
-  const { cryptoKeyRef, setJwt, setInitialized } = useAuth()
-  const navigate = useNavigate()
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { cryptoKeyRef, setJwt, setInitialized } = useAuth();
+  const navigate = useNavigate();
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
     if (password !== confirm) {
-      setError('Passwords do not match')
-      return
+      setError('Passwords do not match');
+      return;
     }
     if (password.length < 8) {
-      setError('Password must be at least 8 characters')
-      return
+      setError('Password must be at least 8 characters');
+      return;
     }
-    setLoading(true)
+    setLoading(true);
     try {
-      const salt = generateSalt()
-      const saltB64 = saltToBase64(salt)
-      const key = await deriveKey(password, salt)
-      const passwordHash = await hashKey(key)
-      const { encryptedData, iv } = await encrypt(key, JSON.stringify([]))
-      const { token } = await api.setup({ salt: saltB64, passwordHash, encryptedData, iv })
-      cryptoKeyRef.current = key
-      setJwt(token)
-      setInitialized(true)
-      navigate('/vault')
+      const salt = generateSalt();
+      const saltB64 = saltToBase64(salt);
+      const key = await deriveKey(password, salt);
+      const passwordHash = await hashKey(key);
+      const { encryptedData, iv } = await encrypt(key, JSON.stringify([]));
+      const { token } = await api.setup({ salt: saltB64, passwordHash, encryptedData, iv });
+      cryptoKeyRef.current = key;
+      setJwt(token);
+      setInitialized(true);
+      navigate('/vault');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Setup failed')
+      setError(e instanceof Error ? e.message : 'Setup failed');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -75,5 +75,5 @@ export default function SetupPage() {
         </button>
       </form>
     </div>
-  )
+  );
 }
