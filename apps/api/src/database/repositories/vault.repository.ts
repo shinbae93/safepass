@@ -32,7 +32,7 @@ export class VaultRepository {
     patch: { title?: string; value?: string; notes?: string | null },
   ): Promise<VaultEntity> {
     await this.repo.update({ id, userId }, patch);
-    return this.repo.findOne({ where: { id, userId } });
+    return this.repo.findOne({ where: { id, userId } }) as Promise<VaultEntity>;
   }
 
   async deleteOne(id: string, userId: string): Promise<void> {
