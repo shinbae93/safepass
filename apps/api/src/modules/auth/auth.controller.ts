@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SetupDto } from './dto/setup.dto';
 import { UnlockDto } from './dto/unlock.dto';
@@ -13,8 +13,8 @@ export class AuthController {
   }
 
   @Get('salt')
-  getSalt() {
-    return this.authService.getSalt();
+  getSalt(@Query('username') username: string) {
+    return this.authService.getSalt(username);
   }
 
   @Post('setup')
