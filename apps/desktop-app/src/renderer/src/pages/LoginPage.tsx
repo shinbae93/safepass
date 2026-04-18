@@ -4,7 +4,7 @@ import { useAuth } from '@renderer/context/AuthContext';
 import { api } from '@renderer/lib/api';
 import { deriveKey, hashKey, base64ToSalt } from '@renderer/lib/crypto';
 
-export default function UnlockPage() {
+export default function LoginPage() {
   const { cryptoKeyRef, setJwt, setUsername } = useAuth();
   const navigate = useNavigate();
   const [knownUsers, setKnownUsers] = useState<StoredUser[]>([]);
@@ -19,6 +19,7 @@ export default function UnlockPage() {
     window.storeAPI.getUsers().then((users) => {
       setKnownUsers(users);
       if (users.length > 0) setSelectedUserId(users[0].id);
+      else setShowManual(true);
     });
   }, []);
 
@@ -45,9 +46,6 @@ export default function UnlockPage() {
       let displayUsername: string;
 
       if (showManual) {
-        // For manual entry we don't have a userId yet — look up salt by username
-        // via a temporary endpoint or reject: here we require the user to be in the list.
-        // If not found, show a helpful error.
         const found = knownUsers.find(
           (u) => u.username.toLowerCase() === manualUsername.trim().toLowerCase(),
         );
@@ -91,7 +89,7 @@ export default function UnlockPage() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm space-y-4 rounded-xl bg-gray-900 p-8 shadow-lg"
       >
-        <h1 className="text-2xl font-bold text-white">Unlock SafePass</h1>
+        <h1 className="text-2xl font-bold text-white">Sign In</h1>
         {error && <p className="text-sm text-red-400">{error}</p>}
 
         {!showManual && knownUsers.length > 0 && (
@@ -119,13 +117,15 @@ export default function UnlockPage() {
           />
         )}
 
-        <button
-          type="button"
-          onClick={() => setShowManual((v) => !v)}
-          className="text-sm text-blue-400 hover:underline"
-        >
-          {showManual ? '← Back to saved accounts' : 'Use a different account'}
-        </button>
+        {knownUsers.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowManual((v) => !v)}
+            className="text-sm text-blue-400 hover:underline"
+          >
+            {showManual ? '← Back to saved accounts' : 'Use a different account'}
+          </button>
+        )}
 
         <input
           type="password"
@@ -140,8 +140,19 @@ export default function UnlockPage() {
           disabled={loading}
           className="w-full rounded-lg bg-blue-600 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? 'Unlocking…' : 'Unlock'}
+          {loading ? 'Signing in…' : 'Sign In'}
         </button>
+
+        <p className="text-center text-sm text-gray-400">
+          No account?{' '}
+          <button
+            type="button"
+            onClick={() => navigate('/register')}
+            className="text-blue-400 hover:underline"
+          >
+            Create one
+          </button>
+        </p>
       </form>
     </div>
   );

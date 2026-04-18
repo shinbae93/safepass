@@ -4,8 +4,8 @@ import { useAuth } from '@renderer/context/AuthContext';
 import { api } from '@renderer/lib/api';
 import { deriveKey, hashKey, generateSalt, saltToBase64 } from '@renderer/lib/crypto';
 
-export default function SetupPage() {
-  const { cryptoKeyRef, setJwt, setUsername, setInitialized } = useAuth();
+export default function RegisterPage() {
+  const { cryptoKeyRef, setJwt, setUsername } = useAuth();
   const navigate = useNavigate();
   const [usernameInput, setUsernameInput] = useState('');
   const [password, setPassword] = useState('');
@@ -39,14 +39,13 @@ export default function SetupPage() {
       cryptoKeyRef.current = key;
       setJwt(token);
       setUsername(usernameInput.trim());
-      setInitialized(true);
       navigate('/vault');
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
       if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network')) {
         setError('Cannot reach the server. Make sure the API is running.');
       } else {
-        setError(msg || 'Setup failed');
+        setError(msg || 'Registration failed');
       }
     } finally {
       setLoading(false);
@@ -93,6 +92,17 @@ export default function SetupPage() {
         >
           {loading ? 'Creating account…' : 'Create Account'}
         </button>
+
+        <p className="text-center text-sm text-gray-400">
+          Already have an account?{' '}
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className="text-blue-400 hover:underline"
+          >
+            Sign in
+          </button>
+        </p>
       </form>
     </div>
   );
