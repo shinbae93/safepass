@@ -34,95 +34,105 @@ SHA-256(exportedKey)  ───────────────────�
 
 ---
 
-## Data Flow
+## Sequence Diagrams
 
-### Registration
-
-```
-Renderer                         API                        electron-store
-   |                              |                               |
-   |-- generateSalt() ----------->|                               |
-   |   saltToBase64(salt)         |                               |
-   |                              |                               |
-   |-- deriveKey(password, salt)->|                               |
-   |-- hashKey(key) ------------->|                               |
-   |                              |                               |
-   |-- POST /auth/register ------>|                               |
-   |   { username, salt, hash }   |                               |
-   |                              |-- check username unique       |
-   |                              |-- INSERT user row             |
-   |<-- { token, userId } --------|                               |
-   |                              |                               |
-   |-- IPC: store:add-user ---------------------------------->    |
-   |   { id: userId, username }   |                  save user    |
-   |                              |                               |
-   |-- set cryptoKeyRef           |                               |
-   |-- set jwt, username          |                               |
-   |-- navigate /vault            |                               |
-```
-
-### Login — saved account
+### Register
 
 ```
-Renderer                         API                        electron-store
-   |                              |                               |
-   |-- IPC: store:get-users --------------------------------->    |
-   |<-- [{ id, username }, ...]  -|------------------------->     |
-   |                              |                               |
-   | (user selects from dropdown) |                               |
-   |                              |                               |
-   |-- GET /auth/salt?userId= --->|                               |
-   |<-- { userId, salt } ---------|                               |
-   |                              |                               |
-   |-- deriveKey(password, salt)  |                               |
-   |-- hashKey(key)               |                               |
-   |                              |                               |
-   |-- POST /auth/login --------->|                               |
-   |   { userId, passwordHash }   |-- timingSafeEqual check       |
-   |<-- { token } ---------------|                               |
-   |                              |                               |
-   |-- set cryptoKeyRef           |                               |
-   |-- set jwt, username          |                               |
-   |-- navigate /vault            |                               |
+User          App (Register screen)       API              Local storage
+ |                    |                    |                     |
+ | fill form          |                    |                     |
+ |─────────────────► |                    |                     |
+ |                    |                    |                     |
+ |                    | 1. generate salt   |                     |
+ |                    | 2. derive key from password + salt       |
+ |                    | 3. hash the key    |                     |
+ |                    |                    |                     |
+ |                    |── POST /auth/register ──────────────►   |
+ |                    |   username, salt, passwordHash           |
+ |                    |                    |                     |
+ |                    |                    | check username      |
+ |                    |                    | save new user       |
+ |                    |◄── { token, userId } ──────────────     |
+ |                    |                    |                     |
+ |                    |── save { id, username } ─────────────► |
+ |                    |                    |                     |
+ |◄── open vault ─── |                    |                     |
 ```
 
-### Login — manual entry (account from another machine)
+---
+
+### Login — pick from saved accounts
 
 ```
-Renderer                         API                        electron-store
-   |                              |                               |
-   | (user types username)        |                               |
-   |                              |                               |
-   |-- GET /auth/salt?username= ->|                               |
-   |<-- { userId, salt } ---------|                               |
-   |                              |                               |
-   |-- deriveKey(password, salt)  |                               |
-   |-- hashKey(key)               |                               |
-   |                              |                               |
-   |-- POST /auth/login --------->|                               |
-   |   { userId, passwordHash }   |-- timingSafeEqual check       |
-   |<-- { token } ---------------|                               |
-   |                              |                               |
-   |-- IPC: store:add-user ---------------------------------->    |
-   |   { id: userId, username }   |                  save user    |
-   |                              |                               |
-   |-- set cryptoKeyRef           |                               |
-   |-- set jwt, username          |                               |
-   |-- navigate /vault            |                               |
+User          App (Login screen)          API              Local storage
+ |                    |                    |                     |
+ | open app           |                    |                     |
+ |─────────────────► |── load saved users ──────────────────► |
+ |                    |◄── [{ id, username }, ...] ──────────── |
+ |                    |                    |                     |
+ | select username    |                    |                     |
+ | enter password     |                    |                     |
+ | press Sign In      |                    |                     |
+ |─────────────────► |                    |                     |
+ |                    |── GET /auth/salt?userId= ──────────►    |
+ |                    |◄── { salt } ───────────────────────     |
+ |                    |                    |                     |
+ |                    | derive key from password + salt          |
+ |                    | hash the key       |                     |
+ |                    |                    |                     |
+ |                    |── POST /auth/login ────────────────►    |
+ |                    |   userId, passwordHash                   |
+ |                    |                    | verify hash         |
+ |                    |◄── { token } ──────────────────────     |
+ |                    |                    |                     |
+ |◄── open vault ─── |                    |                     |
 ```
+
+---
+
+### Login — type username manually (account from another machine)
+
+```
+User          App (Login screen)          API              Local storage
+ |                    |                    |                     |
+ | click              |                    |                     |
+ | "Use a different   |                    |                     |
+ |  account"          |                    |                     |
+ |─────────────────► |                    |                     |
+ |                    |                    |                     |
+ | type username      |                    |                     |
+ | enter password     |                    |                     |
+ | press Sign In      |                    |                     |
+ |─────────────────► |                    |                     |
+ |                    |── GET /auth/salt?username= ─────────►   |
+ |                    |◄── { userId, salt } ───────────────     |
+ |                    |                    |                     |
+ |                    | derive key from password + salt          |
+ |                    | hash the key       |                     |
+ |                    |                    |                     |
+ |                    |── POST /auth/login ────────────────►    |
+ |                    |   userId, passwordHash                   |
+ |                    |                    | verify hash         |
+ |                    |◄── { token } ──────────────────────     |
+ |                    |                    |                     |
+ |                    |── save { id, username } ─────────────► |
+ |                    |   (remembered for next time)             |
+ |◄── open vault ─── |                    |                     |
+```
+
+---
 
 ### Lock
 
 ```
-Renderer
-   |
-   |-- lock()
-   |   cryptoKeyRef.current = null
-   |   jwt = null
-   |   username = null
-   |
-   |-- (App.tsx useEffect fires on jwt change)
-   |-- navigate /login
+User          App (Vault screen)
+ |                    |
+ | click Lock         |
+ |─────────────────► |
+ |                    | clear key from memory
+ |                    | clear JWT
+ |◄── go to Login ── |
 ```
 
 ---
@@ -133,42 +143,42 @@ Renderer
 
 Check whether a username is already registered. Used by the register form for real-time availability feedback.
 
-| | |
-|---|---|
-| Auth | None |
-| Query | `username: string` |
+|              |                       |
+| ------------ | --------------------- |
+| Auth         | None                  |
+| Query        | `username: string`    |
 | Response 200 | `{ exists: boolean }` |
 
 ### `GET /auth/salt`
 
 Retrieve the salt for a user so the client can derive the key before sending credentials.
 
-| | |
-|---|---|
-| Auth | None |
-| Query | `userId: string` **or** `username: string` |
+|              |                                             |
+| ------------ | ------------------------------------------- |
+| Auth         | None                                        |
+| Query        | `userId: string` **or** `username: string`  |
 | Response 200 | `{ userId: string, salt: string }` (base64) |
-| Response 401 | Unknown user |
+| Response 401 | Unknown user                                |
 
 > Accepts `username` to support login from a machine where the user ID is not yet stored locally.
 
 ### `POST /auth/register`
 
-| | |
-|---|---|
-| Auth | None |
-| Body | `{ username: string, salt: string, passwordHash: string }` |
-| Response 201 | `{ token: string, userId: string }` |
-| Response 409 | Username already taken |
+|              |                                                            |
+| ------------ | ---------------------------------------------------------- |
+| Auth         | None                                                       |
+| Body         | `{ username: string, salt: string, passwordHash: string }` |
+| Response 201 | `{ token: string, userId: string }`                        |
+| Response 409 | Username already taken                                     |
 
 ### `POST /auth/login`
 
-| | |
-|---|---|
-| Auth | None |
-| Body | `{ userId: string, passwordHash: string }` |
-| Response 200 | `{ token: string }` |
-| Response 401 | Invalid credentials |
+|              |                                            |
+| ------------ | ------------------------------------------ |
+| Auth         | None                                       |
+| Body         | `{ userId: string, passwordHash: string }` |
+| Response 200 | `{ token: string }`                        |
+| Response 401 | Invalid credentials                        |
 
 ---
 
@@ -176,14 +186,14 @@ Retrieve the salt for a user so the client can derive the key before sending cre
 
 Exposed to the renderer via `contextBridge`. Backed by `electron-store` in the main process.
 
-| Method | IPC channel | Description |
-|---|---|---|
-| `getUsers(): Promise<StoredUser[]>` | `store:get-users` | Returns all locally-known users |
-| `addUser(user: StoredUser): Promise<void>` | `store:add-user` | Upserts a user by ID (no duplicates) |
+| Method                                     | IPC channel       | Description                          |
+| ------------------------------------------ | ----------------- | ------------------------------------ |
+| `getUsers(): Promise<StoredUser[]>`        | `store:get-users` | Returns all locally-known users      |
+| `addUser(user: StoredUser): Promise<void>` | `store:add-user`  | Upserts a user by ID (no duplicates) |
 
 ```typescript
 interface StoredUser {
-  id: string;      // UUID from the API
+  id: string; // UUID from the API
   username: string;
 }
 ```
@@ -211,11 +221,11 @@ App starts
 
 ## Security Invariants
 
-| Invariant | Where enforced |
-|---|---|
-| Master password never leaves the renderer | Web Crypto API only — no serialisation |
-| `CryptoKey` never persisted | Held in a React `ref`, cleared on lock |
-| JWT never written to disk | React state only, lost on app restart |
-| Hash comparison is timing-safe | `crypto.timingSafeEqual` in `auth.service.ts` |
-| Salt is unique per user | Generated client-side with `crypto.getRandomValues` |
-| JWT expiry | 24 hours (HS256), enforced by `@nestjs/jwt` |
+| Invariant                                 | Where enforced                                      |
+| ----------------------------------------- | --------------------------------------------------- |
+| Master password never leaves the renderer | Web Crypto API only — no serialisation              |
+| `CryptoKey` never persisted               | Held in a React `ref`, cleared on lock              |
+| JWT never written to disk                 | React state only, lost on app restart               |
+| Hash comparison is timing-safe            | `crypto.timingSafeEqual` in `auth.service.ts`       |
+| Salt is unique per user                   | Generated client-side with `crypto.getRandomValues` |
+| JWT expiry                                | 24 hours (HS256), enforced by `@nestjs/jwt`         |
