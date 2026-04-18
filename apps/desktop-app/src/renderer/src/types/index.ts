@@ -17,17 +17,17 @@ export interface SaltResponse {
 }
 
 export interface SetupRequest {
+  username: string;
   salt: string;
   passwordHash: string;
-  encryptedData: string;
-  iv: string;
 }
 
 export interface UnlockRequest {
+  username: string;
   passwordHash: string;
 }
 
-export interface UnlockResponse {
+export interface TokenResponse {
   token: string;
 }
 

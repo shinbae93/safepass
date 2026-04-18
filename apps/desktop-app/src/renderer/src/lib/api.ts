@@ -1,3 +1,5 @@
+import type { SetupRequest, UnlockRequest, TokenResponse, AuthStatus, SaltResponse, VaultResponse, VaultUpdateRequest } from '@renderer/types';
+
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 async function request<T>(path: string, options: RequestInit = {}, token?: string): Promise<T> {
@@ -27,24 +29,25 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
 }
 
 export const api = {
-  getStatus: () => request<{ initialized: boolean }>('/auth/status'),
+  getStatus: () => request<AuthStatus>('/auth/status'),
 
-  getSalt: () => request<{ salt: string }>('/auth/salt'),
+  getSalt: (username: string) =>
+    request<SaltResponse>(`/auth/salt?username=${encodeURIComponent(username)}`),
 
-  setup: (body: { salt: string; passwordHash: string; encryptedData: string; iv: string }) =>
-    request<{ token: string }>('/auth/setup', {
+  setup: (body: SetupRequest) =>
+    request<TokenResponse>('/auth/setup', {
       method: 'POST',
       body: JSON.stringify(body),
     }),
 
-  unlock: (body: { passwordHash: string }) =>
-    request<{ token: string }>('/auth/unlock', {
+  unlock: (body: UnlockRequest) =>
+    request<TokenResponse>('/auth/unlock', {
       method: 'POST',
       body: JSON.stringify(body),
     }),
 
-  getVault: (token: string) => request<{ encryptedData: string; iv: string }>('/vault', {}, token),
+  getVault: (token: string) => request<VaultResponse>('/vault', {}, token),
 
-  putVault: (body: { encryptedData: string; iv: string }, token: string) =>
+  putVault: (body: VaultUpdateRequest, token: string) =>
     request<void>('/vault', { method: 'PUT', body: JSON.stringify(body) }, token),
 };
