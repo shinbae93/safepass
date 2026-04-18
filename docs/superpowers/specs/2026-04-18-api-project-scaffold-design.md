@@ -67,6 +67,7 @@ apps/api/
 
 ### UserEntity (`user` table)
 - `id`: UUID PK
+- `username`: varchar(255) NOT NULL
 - `salt`: varchar(255) NOT NULL — base64 PBKDF2 salt
 - `passwordHash`: varchar(255) NOT NULL — SHA-256 of derived key (base64)
 - `createdAt`: timestamptz
