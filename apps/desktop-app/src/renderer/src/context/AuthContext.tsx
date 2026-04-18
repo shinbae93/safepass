@@ -5,8 +5,10 @@ interface AuthContextValue {
   initialized: boolean;
   statusLoading: boolean;
   jwt: string | null;
+  username: string | null;
   cryptoKeyRef: React.MutableRefObject<CryptoKey | null>;
   setJwt: (token: string | null) => void;
+  setUsername: (username: string | null) => void;
   setInitialized: (value: boolean) => void;
   lock: () => void;
 }
@@ -17,6 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [initialized, setInitialized] = useState(false);
   const [statusLoading, setStatusLoading] = useState(true);
   const [jwt, setJwt] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const cryptoKeyRef = useRef<CryptoKey | null>(null);
 
   useEffect(() => {
@@ -38,11 +41,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function lock() {
     cryptoKeyRef.current = null;
     setJwt(null);
+    setUsername(null);
   }
 
   return (
     <AuthContext.Provider
-      value={{ initialized, statusLoading, jwt, cryptoKeyRef, setJwt, setInitialized, lock }}
+      value={{
+        initialized,
+        statusLoading,
+        jwt,
+        username,
+        cryptoKeyRef,
+        setJwt,
+        setUsername,
+        setInitialized,
+        lock,
+      }}
     >
       {children}
     </AuthContext.Provider>
