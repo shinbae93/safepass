@@ -15,13 +15,20 @@ export default function VaultPage() {
     loadVault()
   }, [loadVault])
 
+  const [mutationError, setMutationError] = useState<string | null>(null)
+
   async function handleAdd() {
     if (!title || !value) return
-    await addEntry({ title, value, notes: notes || null, categoryId: null })
-    setTitle('')
-    setValue('')
-    setNotes('')
-    setShowAdd(false)
+    setMutationError(null)
+    try {
+      await addEntry({ title, value, notes: notes || null, categoryId: null })
+      setTitle('')
+      setValue('')
+      setNotes('')
+      setShowAdd(false)
+    } catch (e) {
+      setMutationError(e instanceof Error ? e.message : 'Failed to save entry')
+    }
   }
 
   return (
@@ -37,7 +44,9 @@ export default function VaultPage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-8">
-        {error && <p className="mb-4 text-sm text-red-400">{error}</p>}
+        {(error || mutationError) && (
+          <p className="mb-4 text-sm text-red-400">{mutationError ?? error}</p>
+        )}
 
         <div className="mb-6 flex justify-end">
           <button
@@ -93,7 +102,7 @@ export default function VaultPage() {
                 {entry.notes && <p className="text-sm text-gray-400">{entry.notes}</p>}
               </div>
               <button
-                onClick={() => deleteEntry(entry.id)}
+                onClick={() => deleteEntry(entry.id).catch((e) => setMutationError(e instanceof Error ? e.message : 'Failed to delete entry'))}
                 className="text-sm text-red-400 hover:text-red-300"
               >
                 Delete
