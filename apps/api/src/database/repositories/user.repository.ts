@@ -10,16 +10,16 @@ export class UserRepository {
     private readonly repo: Repository<UserEntity>,
   ) {}
 
+  findById(id: string): Promise<UserEntity | null> {
+    return this.repo.findOne({ where: { id } });
+  }
+
   findByUsername(username: string): Promise<UserEntity | null> {
     return this.repo.findOne({ where: { username } });
   }
 
   existsByUsername(username: string): Promise<boolean> {
     return this.repo.exists({ where: { username } });
-  }
-
-  countAll(): Promise<number> {
-    return this.repo.count();
   }
 
   save(entity: Partial<UserEntity>): Promise<UserEntity> {

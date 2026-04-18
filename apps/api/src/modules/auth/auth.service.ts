@@ -2,8 +2,8 @@ import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/co
 import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 import { UserRepository } from '../../database/repositories/user.repository';
-import { SetupDto } from './dto/setup.dto';
-import { UnlockDto } from './dto/unlock.dto';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -12,13 +12,13 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async getSalt(username: string): Promise<{ salt: string }> {
-    const user = await this.userRepo.findByUsername(username);
-    if (!user) throw new UnauthorizedException('Unknown username');
+  async getSalt(userId: string): Promise<{ salt: string }> {
+    const user = await this.userRepo.findById(userId);
+    if (!user) throw new UnauthorizedException('Unknown user');
     return { salt: user.salt };
   }
 
-  async setup(dto: SetupDto): Promise<{ token: string }> {
+  async register(dto: RegisterDto): Promise<{ token: string; userId: string }> {
     const exists = await this.userRepo.existsByUsername(dto.username);
     if (exists) throw new ConflictException('Username already taken');
     const user = await this.userRepo.save({
@@ -27,11 +27,11 @@ export class AuthService {
       passwordHash: dto.passwordHash,
     });
     const token = this.jwtService.sign({ sub: user.id });
-    return { token };
+    return { token, userId: user.id };
   }
 
-  async unlock(dto: UnlockDto): Promise<{ token: string }> {
-    const user = await this.userRepo.findByUsername(dto.username);
+  async login(dto: LoginDto): Promise<{ token: string }> {
+    const user = await this.userRepo.findById(dto.userId);
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const storedHash = Buffer.from(user.passwordHash, 'base64');
