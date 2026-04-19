@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Summary
 
-SafePass is a local, self-hosted, zero-knowledge password manager. All encryption/decryption happens in the browser using the Web Crypto API (AES-256-GCM). The server never sees plaintext passwords — it stores only an encrypted blob, a salt, and a verification hash.
+SafePass is a local, self-hosted password manager with zero-knowledge key derivation. All encryption/decryption happens in the browser using the Web Crypto API (AES-256-GCM). The server never sees the master password — it stores a salt and a SHA-256 hash of the derived key for verification.
 
-Single-user app: no registration flow. First launch sets a master password; subsequent launches require unlocking with it.
+Multi-user app: users register with a username and master password. Subsequent launches require selecting a username and unlocking with the master password.
 
 ## Tech Stack
 
@@ -19,25 +19,11 @@ Single-user app: no registration flow. First launch sets a master password; subs
 
 ## Common Commands
 
-### Docker Compose (full stack)
-```bash
-docker compose up              # Start all services
-docker compose up --build      # Rebuild after dependency changes
-docker compose down            # Stop everything
-docker compose down -v         # Reset database (removes pgdata volume)
-docker compose exec db psql -U safepass -d safepass  # Access DB directly
-```
-
-### Local dev (faster iteration)
-```bash
-docker compose up db           # Start only PostgreSQL
-pnpm dev:api                   # Terminal 1: NestJS on :3000
-```
-
-### pnpm commands (run from repo root)
+### Dev (run from repo root)
 ```bash
 pnpm install                   # Install all dependencies
-pnpm dev:api                   # Start API dev server
+pnpm dev:api                   # Start API dev server (NestJS on :3000)
+pnpm dev:desktop               # Start Electron + Vite on :5173
 pnpm build:api                 # Production build of API
 pnpm lint                      # Lint all packages
 pnpm format                    # Format all packages
@@ -85,27 +71,27 @@ When implementing features, always check `docs/specs/features/<feature>/` for sp
 ### Monorepo layout
 ```
 apps/
-  client/          # React frontend (Vite)
+  desktop-app/     # Electron app (React + Vite frontend)
     src/
-      lib/         # crypto.ts, api.ts, utils.ts
-      context/     # AuthContext (holds CryptoKey in memory via ref)
-      hooks/       # useVault (vault CRUD + encrypt/decrypt cycle)
-      pages/       # setup, unlock, vault
-      components/  # UI components + shadcn/ui primitives in components/ui/
-      types/       # TypeScript interfaces
+      renderer/src/
+        lib/         # crypto.ts, api.ts, utils.ts
+        context/     # AuthContext (holds CryptoKey in memory via ref)
+        hooks/       # useVault (vault CRUD + encrypt/decrypt cycle)
+        pages/       # RegisterPage, LoginPage, VaultPage
+        components/  # UI components + shadcn/ui primitives in components/ui/
+        types/       # TypeScript interfaces
   api/             # NestJS backend
     src/
-      auth/        # Setup, unlock, JWT guard
-      vault/       # GET/PUT encrypted blob
-      categories/  # CRUD (plaintext, organizational metadata)
-      entities/    # TypeORM entities (User, Vault, Category)
+      modules/
+        auth/      # register, login, salt, check-username, JWT guard
+        vault/     # per-entry CRUD (JWT-guarded)
+        health/    # health check
 ```
 
-### Database (3 tables)
+### Database (2 tables)
 
-- **user**: Single row. Stores salt + password_hash (SHA-256 of derived key, not of the password).
-- **vault**: Single row per user. Stores encrypted_data blob + iv. UNIQUE constraint on user_id.
-- **category**: Multiple rows. Plaintext organizational metadata. When deleted, client-side code nullifies categoryId in vault entries before re-encrypting.
+- **user**: One row per user. Stores username, salt, and password_hash (SHA-256 of derived key, not of the password).
+- **vault**: One row per vault entry per user. Stores encrypted value + iv. No single-blob architecture.
 
 TypeORM auto-converts camelCase properties to snake_case columns.
 
@@ -113,29 +99,40 @@ TypeORM auto-converts camelCase properties to snake_case columns.
 
 Base URL: `http://localhost:3000/api`
 
-- Auth endpoints (public): `GET /auth/status`, `GET /auth/salt`, `POST /auth/setup`, `POST /auth/unlock`
+- Auth endpoints (public): `GET /auth/salt`, `GET /auth/check-username`, `POST /auth/register`, `POST /auth/login`
 - Vault endpoints (JWT required): `GET /vault`, `GET /vault/:id`, `POST /vault`, `PATCH /vault/:id`, `DELETE /vault/:id`
-- Category endpoints (JWT required): `GET /categories`, `POST /categories`, `PATCH /categories/:id`, `DELETE /categories/:id`
 
 ### Frontend routing
 
-| Route     | Page       | Guard                                      |
-|-----------|------------|---------------------------------------------|
-| `/setup`  | SetupPage  | Only if not initialized                     |
-| `/unlock` | UnlockPage | Only if initialized but not unlocked        |
-| `/vault`  | VaultPage  | Only if unlocked (key in memory + valid JWT)|
+| Route       | Page         | Guard                                        |
+|-------------|--------------|----------------------------------------------|
+| `/register` | RegisterPage | Public                                       |
+| `/login`    | LoginPage    | Public                                       |
+| `/vault`    | VaultPage    | Only if unlocked (key in memory + valid JWT) |
 
 State management: React Context + hooks only (no Redux/Zustand). AuthContext holds security state; useVault hook manages decrypted vault data with optimistic mutations and rollback on failure.
 
 ## Environment Variables
 
-Defined in `.env` at project root (git-ignored):
+Defined in per-app `.env` files (git-ignored). Copy from `.env.example` in each app directory.
 
-| Variable     | Used By      | Default                    |
-|--------------|--------------|----------------------------|
-| DB_PASSWORD  | db, api      | safepass_dev               |
-| JWT_SECRET   | api          | dev_jwt_secret_change_me   |
-| VITE_API_URL | client       | http://localhost:3000      |
+**`apps/api/.env`**
+
+| Variable     | Default        |
+|--------------|----------------|
+| DB_HOST      | localhost      |
+| DB_PORT      | 5432           |
+| DB_USERNAME  | safepass       |
+| DB_PASSWORD  | safepass_dev   |
+| DB_NAME      | safepass       |
+| JWT_SECRET   | change_me      |
+| PORT         | 3000           |
+
+**`apps/desktop-app/.env`**
+
+| Variable     | Example                  |
+|--------------|--------------------------|
+| VITE_API_URL | http://localhost:3000    |
 
 ## Security Invariants
 
@@ -143,4 +140,4 @@ Defined in `.env` at project root (git-ignored):
 - Every vault save must use a fresh IV (AES-GCM breaks catastrophically on IV reuse with the same key).
 - Hash comparison on the server must use `crypto.timingSafeEqual`.
 - JWT and CryptoKey are stored in JS memory only — never localStorage or cookies.
-- CORS is restricted to `http://localhost:5173`.
+- CORS: currently `app.enableCors()` with no restrictions (open). Restrict in production.
