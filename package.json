@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev:api": "pnpm --filter @safepass/api start:dev",
+    "dev": "pnpm run dev:api & pnpm run dev:desktop",
     "dev:desktop": "pnpm --filter @safepass/desktop-app dev",
     "build:api": "pnpm --filter @safepass/api build",
     "build:desktop": "pnpm --filter @safepass/desktop-app build",
